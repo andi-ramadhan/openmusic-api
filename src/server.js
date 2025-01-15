@@ -1,9 +1,9 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
-const album = require('./api');
-const AlbumServices = require('./services/AlbumServices');
-const AlbumValidator = require('./validator/album');
+const album = require('./api/album');
+const { AlbumServices }  = require('./services/Services');
+const AlbumValidator = require('./validator');
 const UserError = require('./exceptions/UserError');
 
 const init = async () => {
