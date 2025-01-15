@@ -43,7 +43,7 @@ class AlbumServices {
 
   async editAlbumById(id, { name, year }) {
     const query = {
-      text: 'UPDATE album SET name = $1, year = $2 WHERE id = $3 RETURNING id',
+      text: 'UPDATE albums_data SET name = $1, year = $2 WHERE id = $3 RETURNING id',
       values: [name, year, id],
     };
 

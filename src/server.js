@@ -1,9 +1,13 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
-const openmusicPlugins = require('./api/album');
+const album = require('./api');
+const AlbumServices = require('./services/AlbumServices');
+const AlbumValidator = require('./validator/album');
+const UserError = require('./exceptions/UserError');
 
 const init = async () => {
+  const albumService = new AlbumServices();
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -14,17 +18,45 @@ const init = async () => {
     },
   });
 
-  for (const plugin of openmusicPlugins) {
-    await server.register({
-      plugin,
-      options: {
-        service: {
-          albumService: {},
-          songService: {},
-        }
-      },
-    });
-  }
+  await server.register({
+    plugin: album,
+    options: {
+      service: albumService,
+      validator: AlbumValidator,
+    }
+  });
+
+  server.ext('onPreResponse', (request, h) => {
+    const { response } = request;
+
+    if (response instanceof Error) {
+
+      // Internal Error Handling
+      if (response instanceof UserError) {
+        const newResponse = h.response({
+          status: 'fail',
+          message: response.message,
+        });
+        newResponse.code(response.statusCode);
+        return newResponse;
+      }
+
+      // Hapi Native Error Handling
+      if (!response.isServer) {
+        return h.continue;
+      }
+
+      // Internal Server Custom Error
+      const newResponse = h.response({
+        status: 'error',
+        message: 'Sorry but an error occurred on our server'
+      });
+      newResponse.code(500);
+      return newResponse;
+    }
+
+    return h.continue;
+  });
 
   await server.start();
   console.log(`Server running on ${server.info.uri}`);
