@@ -19,6 +19,8 @@ class AlbumsHandler {
         albumId,
       },
     });
+    response.code(201);
+    return response;
   }
 
   async getAlbumByIdHandler(request, h){
