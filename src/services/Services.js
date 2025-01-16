@@ -77,7 +77,7 @@ class SongServices {
     const id = `song-${nanoid(16)}`;
 
     const query = {
-      text: 'INSERT INTO albums_data VALUES($1, $2, $3) RETURNING id',
+      text: 'INSERT INTO songs_data VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id',
       values: [id, title, year, performer, genre, duration, albumId],
     };
 
@@ -91,7 +91,7 @@ class SongServices {
   }
 
   async getSongs() {
-    const result = await this._pool.query('SELECT * FROM songs_data');
+    const result = await this._pool.query('SELECT id, title, performer FROM songs_data');
     return result.rows;
   }
 
@@ -112,7 +112,7 @@ class SongServices {
 
   async editSongById(id, { title, year, performer, genre, duration, albumId }) {
     const query = {
-      text: 'UPDATE songs_data SET title = $1, year = $2, performer = $3, genre = $4, duration = $5, albumId = $6 WHERE id = $7 RETURNING id',
+      text: 'UPDATE songs_data SET title = $1, year = $2, performer = $3, genre = $4, duration = $5, "albumId" = $6 WHERE id = $7 RETURNING id',
       values: [title, year, performer, genre, duration, albumId, id],
     };
 
