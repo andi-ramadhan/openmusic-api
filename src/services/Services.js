@@ -27,18 +27,29 @@ class AlbumServices {
   }
 
   async getAlbumById(id) {
-    const query = {
+    const albumQuery = {
       text: 'SELECT * FROM albums_data WHERE id = $1',
       values: [id],
     };
 
-    const result = await this._pool.query(query);
+    const albumResult = await this._pool.query(albumQuery);
 
-    if (!result.rows.length) {
+    if (!albumResult.rows.length) {
       throw new NotFoundError('Album tidak ditemukan');
     }
 
-    return result.rows[0];
+    const album = albumResult.rows[0];
+
+    const songsQuery = {
+      text: 'SELECT id, title, performer FROM songs_data WHERE "albumId" = $1',
+      values: [id],
+    };
+
+    const songsResult = await this._pool.query(songsQuery);
+
+    album.songs = songsResult.rows;
+
+    return album;
   }
 
   async editAlbumById(id, { name, year }) {
@@ -90,8 +101,33 @@ class SongServices {
     return result.rows[0].id;
   }
 
-  async getSongs() {
-    const result = await this._pool.query('SELECT id, title, performer FROM songs_data');
+  async getSongs({ title, performer }) {
+    let query;
+    const values = [];
+
+    if (title && performer) {
+      query = {
+        text: 'SELECT id, title, performer FROM songs_data WHERE title ILIKE $1 AND performer ILIKE $2',
+        values: [`%${title}%`, `%${performer}%`],
+      };
+    } else if (title) {
+      query = {
+        text: 'SELECT id, title, performer FROM songs_data WHERE title ILIKE $1',
+        values: [`%${title}%`],
+      };
+    } else if (performer) {
+      query = {
+        text: 'SELECT id, title, performer FROM songs_data WHERE performer ILIKE $1',
+        values: [`%${performer}%`],
+      };
+    } else {
+      query = {
+        text: 'SELECT id, title, performer FROM songs_data',
+        values: [],
+      };
+    }
+
+    const result = await this._pool.query(query);
     return result.rows;
   }
 
