@@ -9,33 +9,24 @@ exports.shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-  pgm.createTable('songs_data', {
+  pgm.createTable('users_data', {
     id: {
-      type: 'VARCHAR(21)',
+      type: 'VARCHAR(50)',
       primaryKey: true,
     },
-    title: {
+    username: {
+      type: 'VARCHAR(50)',
+      unique: true,
+      notNull: true,
+    },
+    password: {
       type: 'TEXT',
       notNull: true,
     },
-    year: {
-      type: 'INT',
-      notNull: true,
-    },
-    performer: {
+    fullname: {
       type: 'TEXT',
       notNull: true,
-    },
-    genre: {
-      type: 'TEXT',
-      notNull: true,
-    },
-    duration: {
-      type: 'INT',
-    },
-    albumId: {
-      type: 'VARCHAR(24)',
-    },
+    }
   });
 };
 
@@ -45,5 +36,5 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-  pgm.dropTable('songs_data');
+  pgm.dropTable('users_data');
 };
