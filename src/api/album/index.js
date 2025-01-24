@@ -1,5 +1,5 @@
 const AlbumsHandler = require('./handler');
-const { albumRoutes } = require('../routes');
+const albumRoutes = require('./routes');
 
 const albumsPlugin = {
   name: 'albums',

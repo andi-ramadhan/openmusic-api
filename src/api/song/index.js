@@ -1,5 +1,5 @@
 const SongsHandler = require('./handler');
-const { songRoutes } = require('../routes');
+const songRoutes = require('./routes');
 
 const songsPlugin = {
   name: 'songs',
