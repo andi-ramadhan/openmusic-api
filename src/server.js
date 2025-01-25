@@ -5,13 +5,19 @@ const Hapi = require('@hapi/hapi');
 // Plugins
 const albumPlugin = require('./api/album');
 const songPlugin = require('./api/song');
+const usersPlugin = require('./api/users');
 
 // Services
 const AlbumServices = require('./services/AlbumServices');
 const SongServices = require('./services/SongServices');
+const UserServices = require('./services/UserServices');
 
 // Validators
-const { AlbumValidator, SongValidator } = require('./validator');
+const {
+  AlbumValidator,
+  SongValidator,
+  UserValidator
+} = require('./validator');
 
 // Parent Exceptions
 const UserError = require('./exceptions/UserError');
@@ -19,6 +25,7 @@ const UserError = require('./exceptions/UserError');
 const init = async () => {
   const albumService = new AlbumServices();
   const songService = new SongServices();
+  const userService = new UserServices();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -30,21 +37,30 @@ const init = async () => {
     },
   });
 
-  await server.register({
-    plugin: albumPlugin,
-    options: {
-      service: albumService,
-      validator: AlbumValidator,
+  await server.register([
+    {
+      plugin: albumPlugin,
+      options: {
+        service: albumService,
+        validator: AlbumValidator,
+      },
     },
-  });
+    {
+      plugin: songPlugin,
+      options: {
+        service: songService,
+        validator: SongValidator,
+      },
+    },
+    {
+      plugin: usersPlugin,
+      options: {
+        service: userService,
+        validator: UserValidator,
+      },
+    },
+  ]);
 
-  await server.register({
-    plugin: songPlugin,
-    options: {
-      service: songService,
-      validator: SongValidator,
-    },
-  });
 
   // Error Handling
   server.ext('onPreResponse', (request, h) => {

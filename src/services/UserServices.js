@@ -2,8 +2,6 @@ const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
 const InvariantError = require('../exceptions/InvariantError');
-const NotFoundError = require('../exceptions/NotFoundError');
-const AuthenticationError = require('../exceptions/AuthenticationError');
 
 
 class UserServices {
@@ -18,7 +16,7 @@ class UserServices {
     const hashedPassword = await bcrypt.hash(password, 10);
     const query = {
       text: 'INSERT INTO users_data VALUES ($1, $2, $3, $4) RETURNING id',
-      values: [id, username, hashedPassword. fullname],
+      values: [id, username, hashedPassword, fullname],
     };
 
     const result = await this._pool.query(query);
@@ -43,3 +41,5 @@ class UserServices {
     }
   }
 }
+
+module.exports = UserServices;
