@@ -24,7 +24,7 @@ exports.up = (pgm) => {
     },
   });
 
-  pgm.addConstraint('playlist', 'fk_playlist.owner_users_data.id', 'FOREIGN KEY(owner) REFERENCES users_data(id) ON DELETE CASCADE');
+  pgm.addConstraint('playlists', 'fk_playlist.owner_users_data.id', 'FOREIGN KEY(owner) REFERENCES users_data(id) ON DELETE CASCADE');
 };
 
 /**
@@ -33,7 +33,7 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-  pgm.dropConstraint('playlist', 'fk_playlist.owner_users_data.id');
+  pgm.dropConstraint('playlists', 'fk_playlist.owner_users_data.id');
 
-  pgm.dropTable('playlist');
+  pgm.dropTable('playlists');
 };

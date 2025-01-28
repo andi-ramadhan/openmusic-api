@@ -44,7 +44,6 @@ const init = async () => {
   });
 
   // register external plugin
-
   await server.register([
     {
       plugin: Jwt,
