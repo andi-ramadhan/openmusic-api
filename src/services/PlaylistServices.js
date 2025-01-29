@@ -2,11 +2,13 @@ const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const InvariantError = require('../exceptions/InvariantError');
 const NotFoundError = require('../exceptions/NotFoundError');
+const AuthorizationError = require('../exceptions/AuthorizationError');
 
 
-class PlaylistService {
-  constructor() {
+class PlaylistServices {
+  constructor(service) {
     this._pool = new Pool();
+    this._service = service;
   }
 
   async addPlaylist({ name, owner }) {
@@ -27,9 +29,11 @@ class PlaylistService {
   }
 
   async addSongToPlaylist(playlistId, { songId }) {
+    const id = `playlist-song-${nanoid(16)}`;
+
     const query = {
-      text: 'INSERT INTO playlist_songs (playlist_id, song_id) VALUES($1, $2) RETURNING id',
-      values: [playlistId, songId],
+      text: 'INSERT INTO playlist_songs (id, playlist_id, song_id) VALUES($1, $2, $3) RETURNING id',
+      values: [id, playlistId, songId],
     };
 
     const result = await this._pool.query(query);
@@ -43,16 +47,16 @@ class PlaylistService {
 
   async getPlaylists(owner) {
     const query = {
-      text: `SELECT playlists.* FROM playlists
-      LEFT JOIN users_data ON users.id = playlists.owner
-      WHERE playlists.owner = $1 GROUP BY playlists.id`,
+      text: `SELECT playlists.id, playlists.name, users_data.username FROM playlists
+      LEFT JOIN users_data ON users_data.id = playlists.owner
+      WHERE playlists.owner = $1`,
       values: [owner],
     };
     const result = await this._pool.query(query);
     return result.rows;
   }
 
-  async getSongsOnPlaylists(playlistId) {
+  async getSongsOnPlaylist(playlistId) {
     const query = {
       text: `SELECT songs_data.*
       FROM songs_data
@@ -83,10 +87,10 @@ class PlaylistService {
     }
   }
 
-  async deleteSongOnPlaylist(songId){
+  async deleteSongOnPlaylist(playlistId, songId){
     const query = {
-      text: 'DELETE FROM playlist_songs WHERE song_id = $1 RETURNING id',
-      values: [songId],
+      text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
+      values: [playlistId, songId],
     };
 
     const result = await this._pool.query(query);
@@ -95,4 +99,28 @@ class PlaylistService {
       throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan');
     }
   }
+
+  async verifyPlaylistOwner(playlistId, owner) {
+    const query = {
+      text: 'SELECT * FROM playlists WHERE id = $1',
+      values: [playlistId]
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Playlist tidak ditemukan');
+    }
+
+    const playlist = result.rows[0];
+
+    if (playlist.owner !== owner) {
+      throw new AuthorizationError('Akses ditolak');
+    }
+  }
+
+  async verifyPlaylistAccess(playlistId, userId) {
+  }
 }
+
+module.exports = PlaylistServices;

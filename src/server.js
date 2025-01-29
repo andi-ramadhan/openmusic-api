@@ -8,11 +8,13 @@ const albumPlugin = require('./api/album');
 const songPlugin = require('./api/song');
 const usersPlugin = require('./api/users');
 const authPlugin = require('./api/auth');
+const playlistPlugin = require('./api/playlists');
 
 // Services
 const AlbumServices = require('./services/AlbumServices');
 const SongServices = require('./services/SongServices');
 const UserServices = require('./services/UserServices');
+const PlaylistServices = require('./services/PlaylistServices');
 const AuthenticationsService = require('./services/AuthServices');
 const TokenManager = require('./tokenize/TokenManager');
 
@@ -20,7 +22,8 @@ const TokenManager = require('./tokenize/TokenManager');
 const {
   AlbumValidator,
   SongValidator,
-  UserValidator
+  UserValidator,
+  PlaylistValidator,
 } = require('./validator');
 const AuthenticationsValidator = require('./validator/auth');
 
@@ -32,6 +35,7 @@ const init = async () => {
   const songService = new SongServices();
   const userService = new UserServices();
   const authService = new AuthenticationsService();
+  const playlistService = new PlaylistServices();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -95,6 +99,14 @@ const init = async () => {
         authService, userService,
         tokenManager: TokenManager,
         validator: AuthenticationsValidator,
+      },
+    },
+    {
+      plugin: playlistPlugin,
+      options: {
+        playlistService,
+        songService,
+        validator: PlaylistValidator,
       },
     },
   ]);
