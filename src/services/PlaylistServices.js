@@ -58,7 +58,7 @@ class PlaylistServices {
 
   async getSongsOnPlaylist(playlistId) {
     const query = {
-      text: `SELECT songs_data.*
+      text: `SELECT songs_data.id, songs_data.title, songs_data.performer
       FROM songs_data
       LEFT JOIN playlist_songs ON playlist_songs.song_id = songs_data.id
       WHERE playlist_songs.playlist_id = $1`,
@@ -69,6 +69,24 @@ class PlaylistServices {
 
     if (!result.rowCount) {
       throw new NotFoundError('Playlist tidak ditemukan atau tidak ada lagu di dalamnya');
+    }
+
+    return result.rows;
+  }
+
+  async getPlaylistById(playlistId) {
+    const query = {
+      text: `SELECT playlists.id, playlists.name, users_data.username
+      FROM playlists
+      LEFT JOIN users_data ON users_data.id = playlists.owner
+      WHERE playlists.id = $1`,
+      values: [playlistId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Playlist tidak ditemukan');
     }
 
     return result.rows[0];

@@ -65,12 +65,23 @@ class PlaylistHandler {
     const { id: owner } = request.auth.credentials;
 
     await this._service.verifyPlaylistOwner(playlistId, owner);
+
+    const playlistDetails = await this._service.getPlaylistById(playlistId);
     const songsOnPlaylist = await this._service.getSongsOnPlaylist(playlistId);
 
     return {
       status: 'success',
       data: {
-        songsOnPlaylist,
+        playlist: {
+          id: playlistDetails.id,
+          name: playlistDetails.name,
+          username: playlistDetails.username,
+          songs: songsOnPlaylist.map((song) => ({
+            id: song.id,
+            title: song.title,
+            performer: song.performer,
+          })),
+        },
       },
     };
   }
