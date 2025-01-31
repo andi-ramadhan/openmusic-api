@@ -9,12 +9,14 @@ const songPlugin = require('./api/song');
 const usersPlugin = require('./api/users');
 const authPlugin = require('./api/auth');
 const playlistPlugin = require('./api/playlists');
+const collaborationPlugin = require('./api/collaboration');
 
 // Services
 const AlbumServices = require('./services/AlbumServices');
 const SongServices = require('./services/SongServices');
 const UserServices = require('./services/UserServices');
 const PlaylistServices = require('./services/PlaylistServices');
+const CollaborationServices = require('./services/CollaborationServices');
 const AuthenticationsService = require('./services/AuthServices');
 const TokenManager = require('./tokenize/TokenManager');
 
@@ -25,6 +27,7 @@ const {
   UserValidator,
   PlaylistValidator,
 } = require('./validator');
+const CollaborationsValidator = require('./validator/collab');
 const AuthenticationsValidator = require('./validator/auth');
 
 // Parent Exceptions
@@ -36,6 +39,7 @@ const init = async () => {
   const userService = new UserServices();
   const authService = new AuthenticationsService();
   const playlistService = new PlaylistServices();
+  const collaborationService = new CollaborationServices();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -107,6 +111,14 @@ const init = async () => {
         playlistService,
         songService,
         validator: PlaylistValidator,
+      },
+    },
+    {
+      plugin: collaborationPlugin,
+      options: {
+        collaborationService,
+        playlistService,
+        validator: CollaborationsValidator,
       },
     },
   ]);

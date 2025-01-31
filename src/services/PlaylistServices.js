@@ -1,8 +1,8 @@
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const InvariantError = require('../exceptions/InvariantError');
-const NotFoundError = require('../exceptions/NotFoundError');
 const AuthorizationError = require('../exceptions/AuthorizationError');
+const NotFoundError = require('../exceptions/NotFoundError');
 
 
 class PlaylistServices {
@@ -45,12 +45,15 @@ class PlaylistServices {
     return result.rows[0].id;
   }
 
-  async getPlaylists(owner) {
+  async getPlaylists(userId) {
     const query = {
-      text: `SELECT playlists.id, playlists.name, users_data.username FROM playlists
+      text: `SELECT playlists.id, playlists.name, users_data.username 
+      FROM playlists
       LEFT JOIN users_data ON users_data.id = playlists.owner
-      WHERE playlists.owner = $1`,
-      values: [owner],
+      LEFT JOIN collaborations_data ON collaborations_data.playlist_id = playlists.id
+      WHERE playlists.owner = $1 OR collaborations_data.user_id = $1
+      GROUP BY playlists.id, users_data.username`,
+      values: [userId],
     };
     const result = await this._pool.query(query);
     return result.rows;
@@ -101,7 +104,7 @@ class PlaylistServices {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new NotFoundError('Playlist gagal dihapus. Id tidak ditemukan');
+      throw new NotFoundError('Playlist gagal dihapus. Id playlist tidak ditemukan');
     }
   }
 
@@ -114,13 +117,13 @@ class PlaylistServices {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan');
+      throw new NotFoundError('Lagu gagal dihapus. Id lagu tidak ditemukan');
     }
   }
 
   async verifyPlaylistOwner(playlistId, owner) {
     const query = {
-      text: 'SELECT * FROM playlists WHERE id = $1',
+      text: 'SELECT owner FROM playlists WHERE id = $1',
       values: [playlistId]
     };
 
@@ -138,6 +141,31 @@ class PlaylistServices {
   }
 
   async verifyPlaylistAccess(playlistId, userId) {
+    // debug
+    console.log(`Verifying access for playlistId: ${playlistId}, userId: ${userId}`);
+
+    const query = {
+      text: `SELECT playlists.id, playlists.owner, collaborations_data.user_id FROM playlists
+      LEFT JOIN collaborations_data ON collaborations_data.playlist_id = playlists.id
+      WHERE playlists.id = $1`,
+      values: [playlistId],
+    };
+
+    const result = await this._pool.query(query);
+
+    console.log(`Query: ${query.text}`);
+    console.log(`Values: ${query.values}`);
+    console.log(`Result: ${JSON.stringify(result.rows)}`);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Playlists tidak ditemukan');
+    }
+
+    const playlist = result.rows[0];
+
+    if (playlist.owner !== userId && !result.rows.some((row) => row.user_id === userId)) {
+      throw new AuthorizationError('Akses ditolak');
+    }
   }
 }
 

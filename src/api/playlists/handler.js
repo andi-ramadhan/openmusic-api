@@ -1,4 +1,6 @@
 const autoBind = require('auto-bind');
+const AuthorizationError = require('../../exceptions/AuthorizationError');
+const NotFoundError = require('../../exceptions/NotFoundError');
 
 class PlaylistHandler {
   constructor(service, validator, songService) {
@@ -50,8 +52,8 @@ class PlaylistHandler {
   }
 
   async getPlaylistsHandler(request) {
-    const { id: owner } = request.auth.credentials;
-    const playlists = await this._service.getPlaylists(owner);
+    const { id: userId } = request.auth.credentials;
+    const playlists = await this._service.getPlaylists(userId);
     return {
       status: 'success',
       data: {
@@ -62,9 +64,9 @@ class PlaylistHandler {
 
   async getSongsOnPlaylistHandler(request, h){
     const { id: playlistId } = request.params;
-    const { id: owner } = request.auth.credentials;
+    const { id: userId } = request.auth.credentials;
 
-    await this._service.verifyPlaylistOwner(playlistId, owner);
+    await this._service.verifyPlaylistAccess(playlistId, userId);
 
     const playlistDetails = await this._service.getPlaylistById(playlistId);
     const songsOnPlaylist = await this._service.getSongsOnPlaylist(playlistId);
