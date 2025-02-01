@@ -3,10 +3,11 @@ const AuthorizationError = require('../../exceptions/AuthorizationError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class PlaylistHandler {
-  constructor(service, validator, songService) {
+  constructor(service, validator, songService, collaborationService) {
     this._service = service;
     this._validator = validator;
     this._songService = songService;
+    this._collaborationService = collaborationService;
 
     autoBind(this);
   }
@@ -34,10 +35,10 @@ class PlaylistHandler {
 
     const { id: playlistId } = request.params;
     const { songId } = request.payload;
-    const { id: owner } = request.auth.credentials;
+    const { id: userId } = request.auth.credentials;
 
     await this._songService.verifySongExistence(songId);
-    await this._service.verifyPlaylistOwner(playlistId, owner);
+    await this._service.verifyPlaylistAccess(playlistId, userId);
 
     const playlistSongId = await this._service.addSongToPlaylist(playlistId, { songId });
 
@@ -108,7 +109,7 @@ class PlaylistHandler {
     const { id: owner } = request.auth.credentials;
     const { songId } = request.payload;
 
-    await this._service.verifyPlaylistOwner(playlistId, owner);
+    await this._service.verifyPlaylistAccess(playlistId, owner);
     await this._service.deleteSongOnPlaylist(playlistId, songId);
 
     return {

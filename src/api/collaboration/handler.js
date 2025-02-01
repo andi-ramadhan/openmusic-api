@@ -17,12 +17,12 @@ class CollaborationsHandler {
 
     await this._service.verifyUserExistence(userId);
     await this._playlistService.verifyPlaylistOwner(playlistId, owner);
-    const collabId = await this._service.addCollaboration(playlistId, userId, owner);
+    const collaborationId = await this._service.addCollaboration(playlistId, userId, owner);
 
     const response = h.response({
       status: 'success',
       data: {
-        collabId,
+        collaborationId,
       },
     }).code(201);
     return response;

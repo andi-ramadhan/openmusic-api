@@ -6,9 +6,9 @@ const NotFoundError = require('../exceptions/NotFoundError');
 
 
 class PlaylistServices {
-  constructor(service) {
+  constructor(collaborationService) {
     this._pool = new Pool();
-    this._service = service;
+    this._collaborationService = collaborationService;
   }
 
   async addPlaylist({ name, owner }) {
@@ -123,7 +123,7 @@ class PlaylistServices {
 
   async verifyPlaylistOwner(playlistId, owner) {
     const query = {
-      text: 'SELECT owner FROM playlists WHERE id = $1',
+      text: 'SELECT * FROM playlists WHERE id = $1',
       values: [playlistId]
     };
 
@@ -141,30 +141,14 @@ class PlaylistServices {
   }
 
   async verifyPlaylistAccess(playlistId, userId) {
-    // debug
-    console.log(`Verifying access for playlistId: ${playlistId}, userId: ${userId}`);
+    try {
+      await this.verifyPlaylistOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
 
-    const query = {
-      text: `SELECT playlists.id, playlists.owner, collaborations_data.user_id FROM playlists
-      LEFT JOIN collaborations_data ON collaborations_data.playlist_id = playlists.id
-      WHERE playlists.id = $1`,
-      values: [playlistId],
-    };
-
-    const result = await this._pool.query(query);
-
-    console.log(`Query: ${query.text}`);
-    console.log(`Values: ${query.values}`);
-    console.log(`Result: ${JSON.stringify(result.rows)}`);
-
-    if (!result.rowCount) {
-      throw new NotFoundError('Playlists tidak ditemukan');
-    }
-
-    const playlist = result.rows[0];
-
-    if (playlist.owner !== userId && !result.rows.some((row) => row.user_id === userId)) {
-      throw new AuthorizationError('Akses ditolak');
+      await this._collaborationService.verifyCollaborator(playlistId, userId);
     }
   }
 }

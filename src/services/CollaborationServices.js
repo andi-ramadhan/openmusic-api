@@ -9,11 +9,7 @@ class CollaborationServices {
     this._pool = new Pool();
   }
 
-  async addCollaboration(playlistId, userId, owner) {
-    if (!owner) {
-      throw new AuthorizationError('Authentication is required');
-    }
-
+  async addCollaboration(playlistId, userId) {
     const id = `collab-${nanoid(16)}`;
 
     const query = {
@@ -30,11 +26,7 @@ class CollaborationServices {
     return result.rows[0].id;
   }
 
-  async deleteCollaboration(playlistId, userId, owner) {
-    if (!owner) {
-      throw new AuthorizationError('Authentication is required');
-    }
-
+  async deleteCollaboration(playlistId, userId) {
     const query = {
       text: 'DELETE FROM collaborations_data WHERE playlist_id = $1 AND user_id = $2',
       values: [playlistId, userId],
@@ -56,7 +48,7 @@ class CollaborationServices {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new InvariantError('Verifikasi Kolaborator gagal');
+      throw new AuthorizationError('Akses ditolak');
     }
   }
 
