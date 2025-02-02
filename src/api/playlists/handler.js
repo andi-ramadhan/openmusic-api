@@ -1,6 +1,4 @@
 const autoBind = require('auto-bind');
-const AuthorizationError = require('../../exceptions/AuthorizationError');
-const NotFoundError = require('../../exceptions/NotFoundError');
 
 class PlaylistHandler {
   constructor(service, validator, songService, collaborationService) {
