@@ -10,6 +10,7 @@ const usersPlugin = require('./api/users');
 const authPlugin = require('./api/auth');
 const playlistPlugin = require('./api/playlists');
 const collaborationPlugin = require('./api/collaboration');
+const activityPlugin = require('./api/activities');
 
 // Services
 const AlbumServices = require('./services/AlbumServices');
@@ -18,6 +19,7 @@ const UserServices = require('./services/UserServices');
 const PlaylistServices = require('./services/PlaylistServices');
 const CollaborationServices = require('./services/CollaborationServices');
 const AuthenticationsService = require('./services/AuthServices');
+const ActivityServices = require('./services/ActivityServices');
 const TokenManager = require('./tokenize/TokenManager');
 
 // Validators
@@ -40,6 +42,7 @@ const init = async () => {
   const authService = new AuthenticationsService();
   const collaborationService = new CollaborationServices();
   const playlistService = new PlaylistServices(collaborationService);
+  const activityService = new ActivityServices(collaborationService);
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -120,6 +123,15 @@ const init = async () => {
         collaborationService,
         playlistService,
         validator: CollaborationsValidator,
+      },
+    },
+    {
+      plugin: activityPlugin,
+      options: { // remember, ORDER AS WHAT IT NEED IS IMPORTANT, don't randomly put without a make sense order dear myself.
+        activityService,
+        playlistService,
+        collaborationService,
+        songService,
       },
     },
   ]);

@@ -28,21 +28,38 @@ class PlaylistServices {
     return result.rows[0].id;
   }
 
-  async addSongToPlaylist(playlistId, { songId }) {
-    const id = `playlist-song-${nanoid(16)}`;
+  async addSongToPlaylist(playlistId, { songId }, userId) {
+    const playlistSongId = `playlist-song-${nanoid(16)}`;
+    const activityId = `activity-${nanoid(16)}`;
+    const timestamp = new Date().toISOString();
 
-    const query = {
-      text: 'INSERT INTO playlist_songs (id, playlist_id, song_id) VALUES($1, $2, $3) RETURNING id',
-      values: [id, playlistId, songId],
-    };
+    const connection = await this._pool.connect();
 
-    const result = await this._pool.query(query);
+    try {
+      const addSongResult = await connection.query({
+        text: 'INSERT INTO playlist_songs VALUES($1, $2, $3) RETURNING id',
+        values: [playlistSongId, playlistId, songId],
+      });
 
-    if (!result.rowCount) {
-      throw new InvariantError('Lagu gagal ditambahkan dalam Playlist');
+      if (!addSongResult.rowCount) {
+        throw new InvariantError('Gagal menambahkan lagu ke dalam Playlist');
+      }
+
+      await connection.query({
+        text: 'INSERT INTO playlist_song_activities VALUES($1, $2, $3, $4, $5, $6)',
+        values: [activityId, playlistId, songId, userId, 'add', timestamp],
+      });
+
+      return addSongResult.rows[0].id;
+
+    } catch (error) {
+      if (error instanceof InvariantError) {
+        throw error;
+      }
+      throw error;
+    } finally {
+      connection.release();
     }
-
-    return result.rows[0].id;
   }
 
   async getPlaylists(userId) {
@@ -108,16 +125,29 @@ class PlaylistServices {
     }
   }
 
-  async deleteSongOnPlaylist(playlistId, songId){
-    const query = {
-      text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
-      values: [playlistId, songId],
-    };
+  async deleteSongOnPlaylist(playlistId, songId, userId){
+    const activityId = `activity-${nanoid(16)}`;
+    const timestamp = new Date().toISOString();
+    const connection = await this._pool.connect();
 
-    const result = await this._pool.query(query);
+    try {
+      const deleteResult = await connection.query({
+        text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
+        values: [playlistId, songId],
+      });
 
-    if (!result.rowCount) {
-      throw new NotFoundError('Lagu gagal dihapus. Id lagu tidak ditemukan');
+      if (!deleteResult.rowCount) {
+        throw new NotFoundError('Lagu gagal dihapus. Id lagu tidak ditemukan');
+      }
+
+      await connection.query({
+        text: 'INSERT INTO playlist_song_activities VALUES($1, $2, $3, $4, $5, $6)',
+        values: [activityId, playlistId, songId, userId, 'delete', timestamp],
+      });
+    } catch (error) {
+      throw error;
+    } finally {
+      connection.release();
     }
   }
 
