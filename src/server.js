@@ -11,6 +11,7 @@ const authPlugin = require('./api/auth');
 const playlistPlugin = require('./api/playlists');
 const collaborationPlugin = require('./api/collaboration');
 const activityPlugin = require('./api/activities');
+const exportPlugin = require('./api/export');
 
 // Services
 const AlbumServices = require('./services/AlbumServices');
@@ -21,6 +22,7 @@ const CollaborationServices = require('./services/CollaborationServices');
 const AuthenticationsService = require('./services/AuthServices');
 const ActivityServices = require('./services/ActivityServices');
 const TokenManager = require('./tokenize/TokenManager');
+const ProducerService = require('./services/rabbitmq/ProducerService');
 
 // Validators
 const {
@@ -31,6 +33,7 @@ const {
 } = require('./validator');
 const CollaborationsValidator = require('./validator/collab');
 const AuthenticationsValidator = require('./validator/auth');
+const ExportValidator = require('./validator/exports');
 
 // Parent Exceptions
 const UserError = require('./exceptions/UserError');
@@ -132,6 +135,13 @@ const init = async () => {
         playlistService,
         collaborationService,
         songService,
+      },
+    },
+    {
+      plugin: exportPlugin,
+      options: {
+        service: ProducerService,
+        validator: ExportValidator,
       },
     },
   ]);
