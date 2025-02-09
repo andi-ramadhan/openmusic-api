@@ -15,12 +15,9 @@ class MailSender {
 
   sendEmail(targetEmail, content) {
     const message = {
-      from: {
-        name: 'OpenMusicApi',
-        address: 'export@openmusic.com'
-      },
+      from: 'OpenMusic API <noreply@openmusic.com',
       to: targetEmail,
-      subject: 'Playlist Export',
+      subject: 'Export Playlist',
       text: 'Here attached of the playlist export',
       attachments: [
         {
