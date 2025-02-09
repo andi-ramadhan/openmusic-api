@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const path = require('path');
 
 // Plugins
 const albumPlugin = require('./api/album');
@@ -12,6 +13,7 @@ const playlistPlugin = require('./api/playlists');
 const collaborationPlugin = require('./api/collaboration');
 const activityPlugin = require('./api/activities');
 const exportPlugin = require('./api/export');
+const coverPlugin = require('./api/covers');
 
 // Services
 const AlbumServices = require('./services/AlbumServices');
@@ -23,6 +25,7 @@ const AuthenticationsService = require('./services/AuthServices');
 const ActivityServices = require('./services/ActivityServices');
 const TokenManager = require('./tokenize/TokenManager');
 const ProducerService = require('./services/rabbitmq/ProducerService');
+const LocalStorageService = require('./services/local-storage/LocalStorageService');
 
 // Validators
 const {
@@ -34,6 +37,7 @@ const {
 const CollaborationsValidator = require('./validator/collab');
 const AuthenticationsValidator = require('./validator/auth');
 const ExportValidator = require('./validator/exports');
+const CoversValidator = require('./validator/covers');
 
 // Parent Exceptions
 const UserError = require('./exceptions/UserError');
@@ -46,6 +50,7 @@ const init = async () => {
   const collaborationService = new CollaborationServices();
   const playlistService = new PlaylistServices(collaborationService);
   const activityService = new ActivityServices(collaborationService);
+  const localStorageService = new LocalStorageService(path.resolve(__dirname, 'api/covers/file/images'));
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -143,6 +148,13 @@ const init = async () => {
         service: ProducerService,
         validator: ExportValidator,
         playlistService,
+      },
+    },
+    {
+      plugin: coverPlugin,
+      options: {
+        service: localStorageService,
+        validator: CoversValidator,
       },
     },
   ]);
