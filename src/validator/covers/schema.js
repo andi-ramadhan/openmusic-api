@@ -7,8 +7,8 @@ const CoverHeadersSchema = Joi.object({
     'image/gif',
     'image/jpeg',
     'image/png',
-    'image/svg+xml',
-    'image/webp'
+    'image/webp',
+    'image/jpg'
   ).required(),
 }).unknown();
 

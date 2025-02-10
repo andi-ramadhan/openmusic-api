@@ -8,19 +8,10 @@
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-  pgm.createTable('albums_data', {
-    id: {
-      type: 'VARCHAR(24)',
-      primaryKey: true,
-    },
-    name: {
-      type: 'TEXT',
-      notNull: true,
-    },
-    year: {
-      type: 'INT',
-      notNull: true,
-    },
+  pgm.addColumn('albums_data', {
+    cover: {
+      type: 'VARCHAR(255)',
+    }
   });
 };
 
@@ -30,5 +21,5 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-  pgm.dropTable('albums_data');
+  pgm.dropColumn('albums_data', 'cover');
 };

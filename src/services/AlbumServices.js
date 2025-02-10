@@ -2,6 +2,7 @@ const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const InvariantError = require('../exceptions/InvariantError');
 const NotFoundError = require('../exceptions/NotFoundError');
+const config = require('../utils/config');
 
 
 class AlbumServices {
@@ -28,7 +29,7 @@ class AlbumServices {
 
   async getAlbumById(id) {
     const albumQuery = {
-      text: 'SELECT * FROM albums_data WHERE id = $1',
+      text: 'SELECT id, name, year, cover FROM albums_data WHERE id = $1',
       values: [id],
     };
 
@@ -47,9 +48,13 @@ class AlbumServices {
 
     const songsResult = await this._pool.query(songsQuery);
 
-    album.songs = songsResult.rows;
-
-    return album;
+    return {
+      id: album.id,
+      name: album.name,
+      year: album.year,
+      coverUrl: album.cover ? `http://${config.app.host}:${config.app.port}/albums/${id}/${album.cover}` : null,
+      songs: songsResult.rows,
+    };
   }
 
   async editAlbumById(id, { name, year }) {

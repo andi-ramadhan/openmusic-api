@@ -1,5 +1,4 @@
 const autoBind = require('auto-bind');
-const config = require('../../utils/config');
 
 class CoverHandler {
   constructor(service, validator) {
@@ -10,16 +9,16 @@ class CoverHandler {
   }
 
   async postCoverHandler(request, h) {
-    const { cover, id } = request.payload;
+    const { id: albumId } = request.params;
+    const { cover } = request.payload;
+
     this._validator.validateCoverHeaders(cover.hapi.headers);
 
-    const filename = await this._service.writeFile(cover, cover.hapi);
+    await this._service.writeFile(cover, cover.hapi, albumId);
 
     return h.response({
       status: 'success',
-      data: {
-        fileLocation: `http://${config.app.host}:${config.app.port}/albums/${id}/covers/${filename}`,
-      }
+      message: 'Sampul berhasil diunggah',
     }).code(201);
   }
 }
