@@ -15,6 +15,7 @@ const collaborationPlugin = require('./api/collaboration');
 const activityPlugin = require('./api/activities');
 const exportPlugin = require('./api/export');
 const coverPlugin = require('./api/covers');
+const likesPlugin = require('./api/likes');
 
 // Services
 const AlbumServices = require('./services/AlbumServices');
@@ -27,6 +28,7 @@ const ActivityServices = require('./services/ActivityServices');
 const TokenManager = require('./tokenize/TokenManager');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const LocalStorageService = require('./services/local-storage/LocalStorageService');
+const LikeServices = require('./services/LikesServices');
 
 // Validators
 const {
@@ -52,6 +54,7 @@ const init = async () => {
   const playlistService = new PlaylistServices(collaborationService);
   const activityService = new ActivityServices(collaborationService);
   const localStorageService = new LocalStorageService(path.resolve(__dirname, 'api/covers/file/images'));
+  const likesService = new LikeServices();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -159,6 +162,12 @@ const init = async () => {
       options: {
         service: localStorageService,
         validator: CoversValidator,
+      },
+    },
+    {
+      plugin: likesPlugin,
+      options: {
+        service: likesService,
       },
     },
   ]);
