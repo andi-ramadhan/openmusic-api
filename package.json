@@ -4,8 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon ./src/server.js",
-    "migrate": "node-pg-migrate",
-    "start:consumer": "node ./consumer-server/index.js"
+    "migrate": "node-pg-migrate"
   },
   "author": "",
   "license": "ISC",
