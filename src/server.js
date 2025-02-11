@@ -29,6 +29,7 @@ const TokenManager = require('./tokenize/TokenManager');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const LocalStorageService = require('./services/local-storage/LocalStorageService');
 const LikeServices = require('./services/LikesServices');
+const CacheService = require('./services/redis/CacheService');
 
 // Validators
 const {
@@ -54,7 +55,8 @@ const init = async () => {
   const playlistService = new PlaylistServices(collaborationService);
   const activityService = new ActivityServices(collaborationService);
   const localStorageService = new LocalStorageService(path.resolve(__dirname, 'api/covers/file/images'));
-  const likesService = new LikeServices();
+  const cacheService = new CacheService();
+  const likesService = new LikeServices(cacheService);
 
   const server = Hapi.server({
     port: process.env.PORT,

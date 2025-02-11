@@ -12,6 +12,9 @@ const config = {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
   },
+  redis: {
+    server: process.env.REDIS_SERVER,
+  },
 };
 
 module.exports = config;
