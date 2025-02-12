@@ -30,6 +30,7 @@ const ProducerService = require('./services/rabbitmq/ProducerService');
 const LocalStorageService = require('./services/local-storage/LocalStorageService');
 const LikeServices = require('./services/LikesServices');
 const CacheService = require('./services/redis/CacheService');
+const AlbumCoverService = require('./services/AlbumCoverService');
 
 // Validators
 const {
@@ -55,6 +56,7 @@ const init = async () => {
   const playlistService = new PlaylistServices(collaborationService);
   const activityService = new ActivityServices(collaborationService);
   const localStorageService = new LocalStorageService(path.resolve(__dirname, 'api/covers/file/images'));
+  const albumCoverService = new AlbumCoverService(localStorageService);
   const cacheService = new CacheService();
   const likesService = new LikeServices(cacheService);
 
@@ -162,7 +164,7 @@ const init = async () => {
     {
       plugin: coverPlugin,
       options: {
-        service: localStorageService,
+        service: albumCoverService,
         validator: CoversValidator,
       },
     },

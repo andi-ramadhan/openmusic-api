@@ -14,7 +14,7 @@ class CoverHandler {
 
     this._validator.validateCoverHeaders(cover.hapi.headers);
 
-    await this._service.writeFile(cover, cover.hapi, albumId);
+    await this._service.addCoverAlbum(cover, cover.hapi, albumId);
 
     return h.response({
       status: 'success',

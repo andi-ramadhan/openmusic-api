@@ -11,6 +11,8 @@ class LikesHandler {
     const { id: userId } = request.auth.credentials;
     const { id: albumId } = request.params;
 
+    await this._service.verifyAlbumExistence(albumId);
+    await this._service.verifyLikeCheck(userId, albumId);
     await this._service.addLike(userId, albumId);
 
     return h.response({

@@ -10,24 +10,6 @@ class LikeServices {
   }
 
   async addLike(userId, albumId) {
-    const albumCheck = await this._pool.query({
-      text: 'SELECT id FROM albums_data WHERE id = $1',
-      values: [albumId],
-    });
-
-    if (!albumCheck.rowCount) {
-      throw new NotFoundError('Album tidak ditemukan');
-    }
-
-    const likeCheck = await this._pool.query({
-      text: 'SELECT * FROM albums_likes WHERE user_id = $1 AND album_id = $2',
-      values: [userId, albumId],
-    });
-
-    if (likeCheck.rowCount > 0) {
-      throw new BadRequestError('Like hanya bisa dilakukan satu kali');
-    }
-
     const id = `like-${nanoid(16)}`;
     await this._pool.query({
       text: 'INSERT INTO albums_likes (id, user_id, album_id) VALUES ($1, $2, $3)',
@@ -73,6 +55,28 @@ class LikeServices {
     }
 
     await this._cacheService.delete(`likes:${albumId}`);
+  }
+
+  async verifyAlbumExistence(albumId) {
+    const albumCheck = await this._pool.query({
+      text: 'SELECT id FROM albums_data WHERE id = $1',
+      values: [albumId],
+    });
+  
+    if (!albumCheck.rowCount) {
+      throw new NotFoundError('Album tidak ditemukan');
+    }
+  }
+
+  async verifyLikeCheck(userId, albumId) {
+    const likeCheck = await this._pool.query({
+      text: 'SELECT * FROM albums_likes WHERE user_id = $1 AND album_id = $2',
+      values: [userId, albumId],
+    });
+  
+    if (likeCheck.rowCount > 0) {
+      throw new BadRequestError('Like hanya bisa dilakukan satu kali');
+    }
   }
 }
 
