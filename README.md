@@ -1,7 +1,3 @@
-Certainly! Here's a comprehensive and user-friendly documentation for your OpenMusic API project, designed to guide developers through setup, usage, and contribution.
-
----
-
 # 🎵 OpenMusic API Documentation
 
 OpenMusic API is a RESTful back-end service designed for managing music-related data, including albums, songs, users, playlists, and social features. Built with Hapi.js, it offers a modular architecture with robust features like JWT authentication, Redis caching, and RabbitMQ-based asynchronous processing.([GitHub][1])
