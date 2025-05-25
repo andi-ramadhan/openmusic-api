@@ -13,8 +13,7 @@ OpenMusic API is a RESTful back-end service designed for managing music-related 
 5. [API Endpoints](#api-endpoints)
 6. [Setup Instructions](#setup-instructions)
 7. [Deployment](#deployment)
-8. [Contribution Guidelines](#contribution-guidelines)
-9. [License](#license)
+8. [License](#license)
 
 ---
 
